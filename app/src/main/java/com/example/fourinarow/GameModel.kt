@@ -75,37 +75,82 @@ class GameModel: ViewModel() {
             }
     }
 
-    fun checkWinner(board: List<Int>): Int {
+    fun checkWinner(board: List<Int>, rows: Int = 6, cols: Int = 7): Int {
+        // Helper function to check four in a line
+        fun isWinningSequence(indices: List<Int>): Boolean {
+            val first = board[indices[0]]
+            return first != 0 && indices.all { board[it] == first }
+        }
+
         // Check rows
-        for (i in 0..2) {
-            if (board[i * 3] != 0 && board[i * 3] == board[i * 3 + 1] && board[i * 3] == board[i * 3 + 2]) {
-                return board[i * 3]
+        for (row in 0 until rows) {
+            for (col in 0 until cols - 3) {
+                val indices = listOf(
+                    row * cols + col,
+                    row * cols + col + 1,
+                    row * cols + col + 2,
+                    row * cols + col + 3
+                )
+                if (isWinningSequence(indices)) {
+                    return board[indices[0]]
+                }
             }
         }
 
         // Check columns
-        for (i in 0..2) {
-            if (board[i] != 0 && board[i] == board[i + 3] && board[i] == board[i + 6]) {
-                return board[i]
+        for (col in 0 until cols) {
+            for (row in 0 until rows - 3) {
+                val indices = listOf(
+                    row * cols + col,
+                    (row + 1) * cols + col,
+                    (row + 2) * cols + col,
+                    (row + 3) * cols + col
+                )
+                if (isWinningSequence(indices)) {
+                    return board[indices[0]]
+                }
             }
         }
 
-        // Check diagonals
-        if (board[0] != 0 && board[0] == board[4] && board[0] == board[8]) {
-            return board[0]
-        }
-        if (board[2] != 0 && board[2] == board[4] && board[2] == board[6]) {
-            return board[2]
+        // Check diagonals (top-left to bottom-right)
+        for (row in 0 until rows - 3) {
+            for (col in 0 until cols - 3) {
+                val indices = listOf(
+                    row * cols + col,
+                    (row + 1) * cols + col + 1,
+                    (row + 2) * cols + col + 2,
+                    (row + 3) * cols + col + 3
+                )
+                if (isWinningSequence(indices)) {
+                    return board[indices[0]]
+                }
+            }
         }
 
-        // Check draw
-        if (!board.contains(0)) { // Check if all cells are filled and no winner yet
-            return 3
+        // Check diagonals (top-right to bottom-left)
+        for (row in 0 until rows - 3) {
+            for (col in 3 until cols) {
+                val indices = listOf(
+                    row * cols + col,
+                    (row + 1) * cols + col - 1,
+                    (row + 2) * cols + col - 2,
+                    (row + 3) * cols + col - 3
+                )
+                if (isWinningSequence(indices)) {
+                    return board[indices[0]]
+                }
+            }
         }
 
-        // No winner yet
+        // Check for draw
+        if (board.none { it == 0 }) {
+            return 3 // Draw
+        }
+
+        // Game is still ongoing
         return 0
     }
+
 
 
     fun checkGameState(gameId: String?, cell: Int) {
@@ -118,7 +163,7 @@ class GameModel: ViewModel() {
                 if (!myTurn) return
 
                 val list: MutableList<Int> = game.gameBoard.toMutableList()
-
+                if (list[cell] != 0) return
                 if (game.gameState == "player1_turn") {
                     list[cell] = 1
 
