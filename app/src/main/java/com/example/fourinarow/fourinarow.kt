@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -266,12 +267,12 @@ fun GameScreen(navController: NavController, model: GameModel, gameId: String?) 
                     Row {
                         for (j in 0..< cols) {
                             Button(
-                                shape = RectangleShape,
-                                modifier = Modifier.size(50.dp).padding(2.dp),
+                                shape = CircleShape,
+                                modifier = Modifier.size(55.dp).padding(2.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
                                 onClick = {
                                     model.checkGameState(gameId, i * cols + j)
-                                }
+                                }, contentPadding = PaddingValues(0.dp)
                             ) {
                                 // Text("Cell ${i * cols + j} Value: ${game.gameBoard[i * cols + j]}")
                                 if (game.gameBoard[i * cols + j] == 1) {
@@ -279,14 +280,14 @@ fun GameScreen(navController: NavController, model: GameModel, gameId: String?) 
                                         painter = painterResource(id = R.drawable.baseline_account_circle_24),
                                         tint = Color.Red,
                                         contentDescription = "X",
-                                        modifier = Modifier.size(48.dp)
+                                        modifier = Modifier.size(55.dp).padding(0.dp)
                                     )
                                 } else if (game.gameBoard[i * cols + j] == 2) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.baseline_add_24),
                                         tint = Color.Blue,
                                         contentDescription = "O",
-                                        modifier = Modifier.size(48.dp)
+                                        modifier = Modifier.size(55.dp).padding(0.dp)
                                     )
                                 } else {
                                     Text("")
