@@ -153,39 +153,48 @@ class GameModel: ViewModel() {
 
 
 
-    fun checkGameState(gameId: String?, cell: Int) {
-
+    fun checkGameState(gameId: String?, row: Int, col: Int) {
         if (gameId != null) {
             val game: Game? = gameMap.value[gameId]
             if (game != null) {
 
-                val myTurn = game.gameState == "player1_turn" && game.player1Id == localPlayerId.value || game.gameState == "player2_turn" && game.player2Id == localPlayerId.value
+                val myTurn = game.gameState == "player1_turn" && game.player1Id == localPlayerId.value ||
+                        game.gameState == "player2_turn" && game.player2Id == localPlayerId.value
                 if (!myTurn) return
 
                 val list: MutableList<Int> = game.gameBoard.toMutableList()
-                if (list[cell] != 0) return
-                if (game.gameState == "player1_turn") {
-                    list[cell] = 1
 
-                } else if (game.gameState == "player2_turn") {
-                    list[cell] = 2
+                // Find the lowest available position in the column
+                var targetCell = -1
+                for (r in rows - 1 downTo 0) {
+                    val cellIndex = r * cols + col
+                    if (list[cellIndex] == 0) {
+                        targetCell = cellIndex
+                        break
+                    }
                 }
-                var turn = ""
+
+                // If no space is available in the column, return without making a move
+                if (targetCell == -1) return
+
+                // Place the value in the found position based on the current turn
                 if (game.gameState == "player1_turn") {
-                    turn = "player2_turn"
-                } else {
-                    turn = "player1_turn"
+                    list[targetCell] = 1
+                } else if (game.gameState == "player2_turn") {
+                    list[targetCell] = 2
                 }
+
+                // Determine the next turn or game state
+                var turn = if (game.gameState == "player1_turn") "player2_turn" else "player1_turn"
 
                 val winner = checkWinner(list.toList())
-                if (winner == 1) {
-                    turn = "player1_won"
-                } else if (winner == 2) {
-                    turn = "player2_won"
-                } else if (winner == 3) {
-                    turn = "draw"
+                when (winner) {
+                    1 -> turn = "player1_won"
+                    2 -> turn = "player2_won"
+                    3 -> turn = "draw"
                 }
 
+                // Update the database with the new game state and board
                 db.collection("games").document(gameId)
                     .update(
                         "gameBoard", list,
@@ -194,6 +203,7 @@ class GameModel: ViewModel() {
             }
         }
     }
+
 
 
 }

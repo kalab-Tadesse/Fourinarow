@@ -271,7 +271,7 @@ fun GameScreen(navController: NavController, model: GameModel, gameId: String?) 
                                 modifier = Modifier.size(55.dp).padding(2.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
                                 onClick = {
-                                    model.checkGameState(gameId, i * cols + j)
+                                    model.checkGameState(gameId, i , j)
                                 }, contentPadding = PaddingValues(0.dp)
                             ) {
                                 // Text("Cell ${i * cols + j} Value: ${game.gameBoard[i * cols + j]}")
