@@ -74,7 +74,7 @@ fun NewPlayerScreen(navController: NavController, model: GameModel) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Welcome to Robins TicTacToe!")
+            Text("Welcome to Kalabs TicTacToe!")
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -104,7 +104,7 @@ fun NewPlayerScreen(navController: NavController, model: GameModel) {
                             model.localPlayerId.value = newPlayerId
                             navController.navigate("lobby")
                         }.addOnFailureListener { error ->
-                            Log.e("RobinError", "Error creating player: ${error.message}")
+                            Log.e("KalabError", "Error creating player: ${error.message}")
                         }
                 } },
                 modifier = Modifier.fillMaxWidth()
@@ -169,7 +169,7 @@ fun LobbyScreen(navController: NavController, model: GameModel) {
                                             }
                                             .addOnFailureListener {
                                                 Log.e(
-                                                    "RobinError",
+                                                    "KalabError",
                                                     "Error updating game: $gameId"
                                                 )
                                             }
@@ -300,7 +300,7 @@ fun GameScreen(navController: NavController, model: GameModel, gameId: String?) 
         }
     } else {
         Log.e(
-            "RobinError",
+            "kalabError",
             "Error Game not found: $gameId"
         )
         navController.navigate("lobby")
