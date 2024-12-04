@@ -3,6 +3,7 @@ package com.example.fourinarow
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -200,6 +201,7 @@ fun LobbyScreen(navController: NavController, model: GameModel) {
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(navController: NavController, model: GameModel, gameId: String?) {
@@ -213,8 +215,20 @@ fun GameScreen(navController: NavController, model: GameModel, gameId: String?) 
 
     if (gameId != null && games.containsKey(gameId)) {
         val game = games[gameId]!!
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.background),
+                contentDescription = "Background Image",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillBounds
+            )
         Scaffold(
-            topBar = { TopAppBar(title =  { Text("TicTacToe - $playerName")}) }
+            containerColor = Color.Transparent,
+            topBar = { TopAppBar(title =  { Text("TicTacToe - $playerName")}, colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.Gray)) }
         ) { innerPadding ->
             Column(
                 verticalArrangement = Arrangement.Center,
@@ -277,14 +291,14 @@ fun GameScreen(navController: NavController, model: GameModel, gameId: String?) 
                                 // Text("Cell ${i * cols + j} Value: ${game.gameBoard[i * cols + j]}")
                                 if (game.gameBoard[i * cols + j] == 1) {
                                     Icon(
-                                        painter = painterResource(id = R.drawable.baseline_account_circle_24),
+                                        painter = painterResource(id = R.drawable.cricel),
                                         tint = Color.Red,
                                         contentDescription = "X",
                                         modifier = Modifier.size(55.dp).padding(0.dp)
                                     )
                                 } else if (game.gameBoard[i * cols + j] == 2) {
                                     Icon(
-                                        painter = painterResource(id = R.drawable.baseline_add_24),
+                                        painter = painterResource(id = R.drawable.cricel),
                                         tint = Color.Blue,
                                         contentDescription = "O",
                                         modifier = Modifier.size(55.dp).padding(0.dp)
@@ -297,6 +311,7 @@ fun GameScreen(navController: NavController, model: GameModel, gameId: String?) 
                     }
                 }
             }
+        }
         }
     } else {
         Log.e(
