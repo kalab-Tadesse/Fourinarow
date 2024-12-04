@@ -65,52 +65,66 @@ fun NewPlayerScreen(navController: NavController, model: GameModel) {
     }
 
     if (model.localPlayerId.value == null) {
-
-        var playerName by remember { mutableStateOf("") }
-
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Welcome to Kalabs TicTacToe!")
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = playerName,
-                onValueChange = { playerName = it },
-                label = { Text("Enter your name") },
-                modifier = Modifier.fillMaxWidth()
+            Image(
+                painter = painterResource(id = R.drawable.newplayerbackground),
+                contentDescription = "Background Image",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillBounds
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            var playerName by remember { mutableStateOf("") }
 
-            Button(
-                onClick = { if (playerName.isNotBlank()) {
-                    // Create new player in Firestore
-                    val newPlayer = Player(name = playerName)
-
-                    model.db.collection("players")
-                        .add(newPlayer)
-                        .addOnSuccessListener { documentRef ->
-                            val newPlayerId = documentRef.id
-
-                            // Save playerId in SharedPreferences
-                            sharedPreferences.edit().putString("playerId", newPlayerId).apply()
-
-                            // Update local variable and navigate to lobby
-                            model.localPlayerId.value = newPlayerId
-                            navController.navigate("lobby")
-                        }.addOnFailureListener { error ->
-                            Log.e("KalabError", "Error creating player: ${error.message}")
-                        }
-                } },
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Create Player")
+                Text(
+                    "Welcome to Kalabs TicTacToe!",
+                    color = Color.Black,
+                    style = MaterialTheme.typography.headlineMedium)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = playerName,
+                    onValueChange = { playerName = it },
+                    label = { Text("Enter your name", color = Color.Black) },
+                    modifier = Modifier.fillMaxWidth().background(Color.White)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = { if (playerName.isNotBlank()) {
+                        // Create new player in Firestore
+                        val newPlayer = Player(name = playerName)
+
+                        model.db.collection("players")
+                            .add(newPlayer)
+                            .addOnSuccessListener { documentRef ->
+                                val newPlayerId = documentRef.id
+
+                                // Save playerId in SharedPreferences
+                                sharedPreferences.edit().putString("playerId", newPlayerId).apply()
+
+                                // Update local variable and navigate to lobby
+                                model.localPlayerId.value = newPlayerId
+                                navController.navigate("lobby")
+                            }.addOnFailureListener { error ->
+                                Log.e("KalabError", "Error creating player: ${error.message}")
+                            }
+                    } },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Create Player")
+                }
             }
         }
     } else {
