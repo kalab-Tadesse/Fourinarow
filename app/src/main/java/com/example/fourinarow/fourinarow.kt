@@ -128,7 +128,7 @@ fun NewPlayerScreen(navController: NavController, model: GameModel) {
             }
         }
     } else {
-        Text("Laddar....")
+        Text("Loding....")
     }
 }
 
@@ -140,9 +140,9 @@ fun LobbyScreen(navController: NavController, model: GameModel) {
 
     LaunchedEffect(games) {
         games.forEach { (gameId, game) ->
-            // TODO: Popup with accept invite?
             if ((game.player1Id == model.localPlayerId.value || game.player2Id == model.localPlayerId.value)
-                && (game.gameState == "player1_turn" || game.gameState == "player2_turn")) {
+                && (game.gameState == "player1_turn" || game.gameState == "player2_turn")
+            ) {
                 navController.navigate("game/${gameId}")
             }
         }
@@ -152,69 +152,105 @@ fun LobbyScreen(navController: NavController, model: GameModel) {
     players[model.localPlayerId.value]?.let {
         playerName = it.name
     }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.fade),
+            contentDescription = "Background Image",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillBounds
+        )
 
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = { TopAppBar(
+                title = { Text("TicTacToe - $playerName") }, colors = TopAppBarDefaults.
+                smallTopAppBarColors(containerColor = Color.Transparent)) }
+        ) { innerPadding ->
+            LazyColumn(modifier = Modifier.padding(innerPadding)) {
+                items(players.entries.toList()) { (documentId, player) ->
+                    if (documentId != model.localPlayerId.value) { // Don't show yourself
+                        ListItem(
+                            headlineContent = {
+                                Text("Player Name: ${player.name}")
+                            },
+                            supportingContent = {
+                                Text("Status: ...")
+                            },
+                            trailingContent = {
+                                var hasGame = false
+                                games.forEach { (gameId, game) ->
+                                    if (game.player1Id == model.localPlayerId.value && game.gameState == "invite") {
+                                        Text("Waiting for accept...")
+                                        hasGame = true
+                                    } else if (game.player2Id == model.localPlayerId.value && game.gameState == "invite") {
+                                        Row {
+                                            // Accept Button
+                                            Button(onClick = {
+                                                model.db.collection("games").document(gameId)
+                                                    .update("gameState", "player1_turn")
+                                                    .addOnSuccessListener {
+                                                        navController.navigate("game/${gameId}")
+                                                    }
+                                                    .addOnFailureListener {
+                                                        Log.e("KalabError", "Error updating game: $gameId")
+                                                    }
+                                            }) {
+                                                Text("Accept Invite")
+                                            }
 
-    Scaffold(
-        topBar = { TopAppBar(title =  { Text("TicTacToe - $playerName")}) }
-    ) { innerPadding ->
-        LazyColumn(modifier = Modifier.padding(innerPadding)) {
-            items(players.entries.toList()) { (documentId, player) ->
-                if (documentId != model.localPlayerId.value) { // Don't show yourself
-                    ListItem(
-                        headlineContent = {
-                            Text("Player Name: ${player.name}")
-                        },
-                        supportingContent = {
-                            Text("Status: ...")
-                        },
-                        trailingContent = {
-                            var hasGame = false
-                            games.forEach { (gameId, game) ->
-                                if (game.player1Id == model.localPlayerId.value
-                                    && game.gameState == "invite") {
-                                    Text("Waiting for accept...")
-                                    hasGame = true
-                                } else if (game.player2Id == model.localPlayerId.value
-                                    && game.gameState == "invite") {
+                                            Spacer(modifier = Modifier.width(8.dp)) // Add spacing between buttons
+
+                                            // Decline Button
+                                            Button(onClick = {
+                                                model.db.collection("games").document(gameId)
+                                                    .delete()
+                                                    .addOnSuccessListener {
+                                                        Log.d("KalabInfo", "Invite declined and game deleted: $gameId")
+                                                    }
+                                                    .addOnFailureListener {
+                                                        Log.e("KalabError", "Error declining invite: $gameId")
+                                                    }
+                                            }) {
+                                                Text("Decline Invite")
+                                            }
+                                        }
+                                        hasGame = true
+                                    }
+                                }
+
+                                if (!hasGame) {
+                                    // Challenge Button
                                     Button(onClick = {
-                                        model.db.collection("games").document(gameId)
-                                            .update("gameState", "player1_turn")
-                                            .addOnSuccessListener {
-                                                navController.navigate("game/${gameId}")
+                                        model.db.collection("games")
+                                            .add(
+                                                Game(
+                                                    gameState = "invite",
+                                                    player1Id = model.localPlayerId.value!!,
+                                                    player2Id = documentId
+                                                )
+                                            )
+                                            .addOnSuccessListener { documentRef ->
+                                                Log.d("KalabInfo", "Challenge sent: ${documentRef.id}")
                                             }
                                             .addOnFailureListener {
-                                                Log.e(
-                                                    "KalabError",
-                                                    "Error updating game: $gameId"
-                                                )
+                                                Log.e("KalabError", "Error sending challenge: ${it.message}")
                                             }
                                     }) {
-                                        Text("Accept invite")
+                                        Text("Challenge")
                                     }
-                                    hasGame = true
                                 }
                             }
-                            if (!hasGame) {
-                                Button(onClick = {
-                                    model.db.collection("games")
-                                        .add(Game(gameState = "invite",
-                                            player1Id = model.localPlayerId.value!!,
-                                            player2Id = documentId))
-                                        .addOnSuccessListener { documentRef ->
-                                            // TODO: Navigate?
-                                        }
-                                }) {
-                                    Text("Challenge")
-                                }
-                            }
-                        }
-                    )
+
+                        )
+                    }
                 }
             }
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -235,14 +271,14 @@ fun GameScreen(navController: NavController, model: GameModel, gameId: String?) 
                 .fillMaxSize()
         ) {
             Image(
-                painter = painterResource(id = R.drawable.background),
+                painter = painterResource(id = R.drawable.fade),
                 contentDescription = "Background Image",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.FillBounds
             )
         Scaffold(
             containerColor = Color.Transparent,
-            topBar = { TopAppBar(title =  { Text("TicTacToe - $playerName")}, colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.Gray)) }
+            topBar = { TopAppBar(title =  { Text("TicTacToe - $playerName")}, colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.Transparent)) }
         ) { innerPadding ->
             Column(
                 verticalArrangement = Arrangement.Center,
